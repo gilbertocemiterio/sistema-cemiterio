@@ -1,9 +1,11 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 from supabase import create_client, Client
 import datetime
 import os
 
 app = Flask(__name__)
+# Chave secreta necessária para controlar a sessão de login do administrador
+app.secret_key = "sua_chave_secreta_super_segura" 
 
 # --- CONFIGURAÇÃO DO SUPABASE ---
 SUPABASE_URL = "https://gbupmlhrihhyirwnrjtz.supabase.co"
@@ -11,10 +13,35 @@ SUPABASE_KEY = "sb_publishable_opFBH512ka6va3taMRnUKg_ayugnLeF"
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+# 1. PÁGINA PÚBLICA (Qualquer um acessa pelo link do Render ou navegador)
 @app.route('/')
 def index():
-    return render_template('agendaonline.html')
+    # Aqui você renderiza a página de visualização (ex: o agendaonline renomeado para index)
+    return render_template('index.html')
 
+# 2. TELA DE LOGIN DO ADMINISTRADOR
+@app.route('/login', methods=['POST'])
+def login():
+    dados = request.json
+    senha_digitada = dados.get('senha')
+    
+    # Defina aqui a senha de administrador que você preferir
+    if senha_digitada == "admin123": 
+        session['logado'] = True
+        return jsonify({"sucesso": True})
+    else:
+        return jsonify({"sucesso": False, "erro": "Senha incorreta!"})
+
+# 3. PAINEL ADMINISTRATIVO (Versão completa de cadastro, edição e exclusão)
+@app.route('/admin')
+def admin():
+    # Se estiver logado via web OU se for o uso local, libera o painel completo
+    if session.get('logado'):
+        return render_template('agenda_completa.html') # ou o nome da sua tela de gestão
+    else:
+        return redirect(url_for('index'))
+
+# --- ROTAS DA API (FUNCIONAM PARA AMBAS AS TELAS) ---
 @app.route('/api/agendamentos', methods=['GET'])
 def api_listar():
     data_filtro = request.args.get('data', '')
@@ -45,23 +72,14 @@ def api_salvar():
             return jsonify({"sucesso": False, "erro": f"O horario {hora} no Cemiterio {cem} ja esta ocupado!"})
 
         payload = {
-            "data": data,
-            "hora": hora,
-            "cem": cem,
-            "falecido": dados.get('falecido'),
-            "lote": dados.get('lote'),
-            "resp": dados.get('resp'),
-            "tel": dados.get('tel'),
-            "funeraria": dados.get('funeraria'),
-            "obito": dados.get('obito'),
-            "taxa": dados.get('taxa'),
-            "abert": dados.get('abert'),
-            "sit_terreno": dados.get('sit_terreno'),
-            "doc_compra": dados.get('doc_compra'),
-            "cpf": dados.get('cpf'),
-            "est_civil": dados.get('est_civil'),
-            "parentesco": dados.get('parentesco'),
-            "endereco": dados.get('endereco'),
+            "data": data, "hora": hora, "cem": cem,
+            "falecido": dados.get('falecido'), "lote": dados.get('lote'),
+            "resp": dados.get('resp'), "tel": dados.get('tel'),
+            "funeraria": dados.get('funeraria'), "obito": dados.get('obito'),
+            "taxa": dados.get('taxa'), "abert": dados.get('abert'),
+            "sit_terreno": dados.get('sit_terreno'), "doc_compra": dados.get('doc_compra'),
+            "cpf": dados.get('cpf'), "est_civil": dados.get('est_civil'),
+            "parentesco": dados.get('parentesco'), "endereco": dados.get('endereco'),
             "social": dados.get('social')
         }
 
