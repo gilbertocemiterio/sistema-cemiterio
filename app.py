@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 from supabase import create_client, Client
 import datetime
+import os
 
 app = Flask(__name__)
 
@@ -12,7 +13,8 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    # Corrigido para apontar para o nome correto do arquivo na pasta templates
+    return render_template('agendaonline.html')
 
 @app.route('/api/agendamentos', methods=['GET'])
 def api_listar():
@@ -86,4 +88,5 @@ def api_excluir(reg_id):
         return jsonify({"sucesso": False})
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
