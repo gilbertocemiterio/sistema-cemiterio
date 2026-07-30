@@ -3,187 +3,331 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Controle de Sepultamentos - Consulta</title>
+    <title>Controle de Sepultamentos - Paranavai</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            padding: 10px;
-            margin: 0;
-            background-color: #ffffff;
-            color: #333;
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            background-color: #F5F7FA; 
+            color: #333; 
         }
-        .container {
-            width: 100%;
-            margin: 0 auto;
+        .topo { 
+            background-color: #1F4E79; 
+            color: white; 
+            padding: 15px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
         }
-        .topo {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #004080;
-            color: white;
-            padding: 15px;
-            border-radius: 6px;
-            margin-bottom: 15px;
+        .titulo { 
+            font-size: 18px; 
+            font-weight: bold; 
+            margin: 0; 
+            display: flex; 
+            width: 100%; 
+            align-items: center; 
+            justify-content: space-between; 
         }
-        .relogio {
-            font-size: 18px;
-            font-weight: bold;
-            background: #00264d;
-            padding: 5px 10px;
-            border-radius: 4px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #004080;
-            color: white;
-        }
-        @media screen and (min-width: 768px) {
-            body {
-                font-size: 16px;
-                padding: 20px;
-                background-color: #f4f6f9;
-            }
-            .container {
-                max-width: 1100px;
-                background: #fff;
-                padding: 20px;
-                border-radius: 8px;
-                box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            }
+        .busca-bloco { display: flex; align-items: center; }
+        .busca-container { display: inline-block; margin-left: 15px; vertical-align: middle; }
+        .busca-container input { padding: 6px; font-size: 14px; text-align: center; width: 110px; border-radius: 4px; border: none; font-weight: bold; }
+        .relogio-container { display: inline-block; font-family: 'Consolas', monospace; font-size: 20px; font-weight: bold; background-color: #153654; padding: 5px 12px; border-radius: 4px; border: 1px solid #2d6596; color: #00FFCC; }
+        button { padding: 6px 12px; font-size: 12px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-buscar { background-color: #DDEBF7; color: #1F4E79; margin-left: 10px; }
+        .btn-admin { background-color: #ffffff; color: #1F4E79; font-weight: bold; margin-left: 15px; }
+        
+        .corpo-principal { display: table; width: 100%; table-layout: fixed; }
+        .lado-esquerdo { display: table-cell; width: 260px; vertical-align: top; padding: 15px 5px 15px 15px; box-sizing: border-box; }
+        .lado-direito { display: table-cell; vertical-align: top; padding: 15px 15px 15px 5px; box-sizing: border-box; }
+        .corpo { display: table; width: 100%; table-layout: fixed; }
+        .coluna { display: table-cell; width: 50%; padding: 5px; box-sizing: border-box; }
+        .card { background: white; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); padding: 15px; }
+        .titulo-central { color: #1F4E79; border-bottom: 2px solid #1F4E79; padding-bottom: 5px; margin-top: 0; font-size: 15px; }
+        .titulo-recanto { color: #2E7D32; border-bottom: 2px solid #2E7D32; padding-bottom: 5px; margin-top: 0; font-size: 15px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
+        th, td { border: 1px solid #D9D9D9; padding: 8px; text-align: left; font-size: 13px; word-wrap: break-word; }
+        th { background-color: #F2F2F2; font-weight: bold; }
+        
+        .status-livre { background-color: #E2EFDA; color: #385723; font-weight: bold; text-align: center; }
+        .status-reservado { background-color: #FCE4D6; color: #C00000; font-weight: bold; text-align: center; }
+        .status-excecao { background-color: #FFF2CC; color: #B25900; font-weight: bold; text-align: center; }
+        .linha-almoco { background-color: #F2F2F2; color: #7F8C8D; font-style: italic; text-align: center; }
+        
+        .calendario-card { background: white; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); padding: 12px; }
+        .cal-topo { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; background: #1F4E79; color: white; padding: 5px; border-radius: 4px; }
+        .cal-topo button { background: #153654; color: white; padding: 3px 8px; font-size: 14px; }
+        .cal-mes-ano { font-weight: bold; font-size: 13px; }
+        .cal-grade { display: table; width: 100%; table-layout: fixed; text-align: center; }
+        .cal-linha { display: table-row; }
+        .cal-cabecalho { display: table-cell; font-weight: bold; font-size: 11px; padding: 4px 0; background: #EEE; border: 1px solid #DDD; color: #555; }
+        .cal-dia { display: table-cell; padding: 6px 0; font-size: 12px; border: 1px solid #EEE; cursor: pointer; font-weight: bold; color: #333; }
+        .cal-dia:hover { background: #DDEBF7; }
+        .cal-dia-vazio { display: table-cell; background: #FAFAFA; border: 1px solid #F5F5F5; }
+        .cal-dia-selecionado { background: #1F4E79 !important; color: white !important; border: 1px solid #1F4E79; }
+        .cal-dia-hoje { border: 2px solid #2E7D32; color: #2E7D32; }
+        
+        .info-nome { font-size: 15px; font-weight: bold; color: #111; display: block; margin-bottom: 4px; }
+        .info-detalhes { font-size: 12px; color: #333; line-height: 1.4; }
+        .badge { display: inline-block; padding: 2px 5px; font-size: 10px; font-weight: bold; border-radius: 3px; margin-top: 4px; margin-right: 4px; }
+        .badge-ok { background-color: #C6EFCE; color: #006100; }
+        .badge-pendente { background-color: #FFC7CE; color: #9C0006; }
+        .badge-info { background-color: #DDEBF7; color: #1F4E79; }
+        .badge-procuracao { background-color: #D1C4E9; color: #4527A0; }
+        .badge-situacao { background-color: #E1F5FE; color: #0288D1; }
+        .badge-social { background-color: #E2EFDA; color: #385723; }
+        .badge-gaveta { background-color: #F2F2F2; color: #595959; }
+        .badge-excecao { background-color: #D97706; color: #FFF; }
+
+        /* Responsividade básica para celular */
+        @media screen and (max-width: 768px) {
+            .corpo-principal, .corpo, .coluna, .lado-esquerdo, .lado-direito { display: block; width: 100% !important; padding: 5px !important; }
         }
     </style>
 </head>
-<body>
+<body onload="inicializarPagina()">
 
-    <div class="container">
-        <!-- TOPO COM TÍTULO, RELÓGIO E BOTÃO ADMIN -->
-        <div class="topo">
-            <div>
-                <h2 style="margin: 0;">ADMINISTRAÇÃO DE CEMITÉRIOS</h2>
-                <div id="dataAtual" style="font-size: 14px; margin-top: 5px;"></div>
+    <div class="topo">
+        <div class="titulo">
+            <div class="busca-bloco">
+                ADMINISTRACAO DE CEMITERIOS - PARANAVAI
+                <div class="busca-container">
+                    <input type="text" id="txtData" oninput="mascaraData(this)" maxlength="10" />
+                    <button class="btn-buscar" onclick="carregarDados()">Buscar</button>
+                </div>
             </div>
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <div id="relogio" class="relogio">00:00:00</div>
-                <button onclick="abrirModalLogin()" style="background: #ffffff; color: #004080; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold;">
-                    🔐 Administrador
-                </button>
+            <div style="display: flex; align-items: center;">
+                <div id="txtRelogio" class="relogio-container">00:00:00</div>
+                <button class="btn-admin" onclick="abrirModalLogin()">🔐 Modo Administrador</button>
             </div>
         </div>
+    </div>
 
-        <!-- FILTRO DE DATA -->
-        <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
-            <label for="dataFiltro"><strong>Data Selecionada:</strong></label>
-            <input type="date" id="dataFiltro" onchange="carregarAgendamentos()" style="padding: 6px; border: 1px solid #ccc; border-radius: 4px;">
+    <div class="corpo-principal">
+        <div class="lado-esquerdo">
+            <div class="calendario-card">
+                <div class="cal-topo">
+                    <button onclick="mudarMes(-1)">&lt;</button>
+                    <div id="calMesAno" class="cal-mes-ano">Julho de 2026</div>
+                    <button onclick="mudarMes(1)">&gt;</button>
+                </div>
+                <div id="calendarioGrade" class="cal-grade"></div>
+            </div>
         </div>
-
-        <!-- TABELA DE HORÁRIOS -->
-        <table id="tabelaAgendamentos">
-            <thead>
-                <tr>
-                    <th>Hora</th>
-                    <th>Status</th>
-                    <th>Detalhes / Falecido</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td colspan="3" style="text-align: center;">Carregando agendamentos...</td>
-                </tr>
-            </tbody>
-        </table>
+        <div class="lado-direito">
+            <div class="corpo">
+                <div class="coluna">
+                    <div class="card">
+                        <h3 class="titulo-central">CEMITERIO MUNICIPAL CENTRAL</h3>
+                        <div id="containerCentral"></div>
+                    </div>
+                </div>
+                <div class="coluna">
+                    <div class="card">
+                        <h3 class="titulo-recanto">PARQUE RECANTO DA SAUDADE</h3>
+                        <div id="containerRecanto"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- MODAL DE LOGIN DO ADMINISTRADOR -->
-    <div id="modalLogin" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 9999;">
-        <div style="background: white; padding: 20px; border-radius: 8px; width: 300px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-            <h3>Área Restrita</h3>
+    <div id="modalLogin" style="display: none; position: fixed; z-index: 10; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); justify-content: center; align-items: center;">
+        <div style="background-color: white; padding: 20px; border-radius: 6px; width: 300px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+            <h3 style="margin-top:0; color:#1F4E79;">Área Restrita</h3>
             <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Digite a senha de administrador:</p>
             <input type="password" id="senhaAdmin" placeholder="Senha" style="width: 100%; padding: 8px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
             <br>
-            <button onclick="fazerLogin()" style="background: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%;">Entrar</button>
-            <button onclick="fecharModalLogin()" style="background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 5px;">Cancelar</button>
+            <button onclick="fazerLogin()" style="background-color: #2E7D32; color: white; width: 100%; padding: 10px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer;">Entrar no Painel Completo</button>
+            <button onclick="fecharModalLogin()" style="background-color: #7F8C8D; color: white; width: 100%; padding: 8px; margin-top: 5px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer;">Cancelar</button>
         </div>
     </div>
 
-    <script>
-        // Inicializa relógio, data e busca dados ao carregar a página
-        document.addEventListener("DOMContentLoaded", () => {
-            const hoje = new Date().toISOString().split('T')[0];
-            document.getElementById('dataFiltro').value = hoje;
-            
-            atualizarRelogio();
-            setInterval(atualizarRelogio, 1000);
-            
-            carregarAgendamentos();
-        });
+    <script type="text/javascript">
+        var horariosCentral = ["08:00", "09:00", "10:00", "13:00", "14:00", "15:00", "16:00"];
+        var horariosRecanto = ["08:00", "09:00", "10:00", "13:30", "14:20", "15:10", "15:45"];
+        var nomesMeses = ["Janeiro", "Fevereiro", "Marco", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+        var dataCalendarioAtual = new Date();
 
-        function atualizarRelogio() {
-            const agora = new Date();
-            document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR');
-            document.getElementById('dataAtual').innerText = agora.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        function formatarDoisDigitos(n) { return (n < 10 ? '0' : '') + n; }
+
+        function mascaraData(campo) {
+            var v = campo.value.replace(/\D/g, ""); 
+            if (v.length >= 2) v = v.substring(0, 2) + "/" + v.substring(2);
+            if (v.length >= 5) v = v.substring(0, 5) + "/" + v.substring(5, 9);
+            campo.value = v;
         }
 
-        function carregarAgendamentos() {
-            const dataSelecionada = document.getElementById('dataFiltro').value;
-            
-            fetch(`/api/agendamentos?data=${dataSelecionada}`)
+        function inicializarPagina() {
+            iniciarRelogio();
+            var hoje = new Date();
+            document.getElementById("txtData").value = formatarDoisDigitos(hoje.getDate()) + "/" + formatarDoisDigitos(hoje.getMonth() + 1) + "/" + hoje.getFullYear();
+            carregarDados();
+        }
+
+        function iniciarRelogio() {
+            setInterval(function() {
+                var agora = new Date();
+                document.getElementById("txtRelogio").innerText = formatarDoisDigitos(agora.getHours()) + ":" + formatarDoisDigitos(agora.getMinutes()) + ":" + formatarDoisDigitos(agora.getSeconds());
+            }, 1000);
+        }
+
+        function mudarMes(direcao) {
+            dataCalendarioAtual.setMonth(dataCalendarioAtual.getMonth() + direcao);
+            renderizarCalendarioLayout();
+        }
+
+        function selecionarDataCalendario(dia, mes, ano) {
+            document.getElementById("txtData").value = formatarDoisDigitos(dia) + "/" + formatarDoisDigitos(mes) + "/" + ano;
+            carregarDados();
+        }
+
+        function renderizarCalendarioLayout() {
+            var mes = dataCalendarioAtual.getMonth(), ano = dataCalendarioAtual.getFullYear();
+            document.getElementById("calMesAno").innerText = nomesMeses[mes] + " de " + ano;
+            var dataCorrente = document.getElementById("txtData").value.trim();
+            var hoje = new Date();
+            var primeiroDiaSemana = new Date(ano, mes, 1).getDay(), totalDiasMes = new Date(ano, mes + 1, 0).getDate();
+
+            var html = "<div class='cal-linha'>";
+            var diasSemana = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"];
+            for (var i = 0; i < 7; i++) html += "<div class='cal-cabecalho'>" + diasSemana[i] + "</div>";
+            html += "</div><div class='cal-linha'>";
+
+            var colunaConta = 0;
+            for (var i = 0; i < primeiroDiaSemana; i++) { html += "<div class='cal-dia-vazio'></div>"; colunaConta++; }
+
+            for (var diaItem = 1; diaItem <= totalDiasMes; diaItem++) {
+                if (colunaConta === 7) { html += "</div><div class='cal-linha'>"; colunaConta = 0; }
+                var strDataItem = formatarDoisDigitos(diaItem) + "/" + formatarDoisDigitos(mes + 1) + "/" + ano;
+                var classeEstilo = "cal-dia";
+                if (strDataItem === dataCorrente) classeEstilo += " cal-dia-selecionado";
+                if (diaItem === hoje.getDate() && mes === hoje.getMonth() && ano === hoje.getFullYear()) classeEstilo += " cal-dia-hoje";
+                html += "<div class='" + classeEstilo + "' onclick='selecionarDataCalendario(" + diaItem + "," + (mes + 1) + "," + ano + ")'>" + diaItem + "</div>";
+                colunaConta++;
+            }
+            while (colunaConta < 7) { html += "<div class='cal-dia-vazio'></div>"; colunaConta++; }
+            html += "</div>";
+            document.getElementById("calendarioGrade").innerHTML = html;
+        }
+
+        function carregarDados() {
+            var dataAlvo = document.getElementById("txtData").value.trim();
+            if(!dataAlvo) return;
+
+            fetch(`/api/agendamentos?data=${dataAlvo}`)
                 .then(response => response.json())
                 .then(dados => {
-                    const tbody = document.querySelector('#tabelaAgendamentos tbody');
-                    tbody.innerHTML = '';
+                    var agendamentos = { "Central": {}, "Recanto": {} };
+                    
+                    dados.forEach(item => {
+                        if(item.cem === "Central" || item.cem === "Recanto") {
+                            agendamentos[item.cem][item.hora] = item;
+                        }
+                    });
 
-                    if (dados.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #666;">Nenhum agendamento registrado para esta data.</td></tr>';
-                        return;
+                    renderizarTabela("containerCentral", "Central", horariosCentral, agendamentos["Central"], "11h-13h");
+                    renderizarTabela("containerRecanto", "Recanto", horariosRecanto, agendamentos["Recanto"], "11h-13h30");
+                    renderizarCalendarioLayout();
+                })
+                .catch(err => console.error("Erro ao buscar dados:", err));
+        }
+
+        function renderizarTabela(idContainer, cemiterio, listaHorariosPadrao, dadosCem, rotuloAlmoco) {
+            var html = "<table>";
+            html += "<tr><th style='width:55px; text-align:center;'>Hora</th><th style='width:95px; text-align:center;'>Status</th><th>Detalhes do Agendamento</th></tr>";
+            
+            var todosHorarios = [].concat(listaHorariosPadrao);
+            for (var h in dadosCem) {
+                if (dadosCem.hasOwnProperty(h)) {
+                    var existe = false;
+                    for (var k = 0; k < todosHorarios.length; k++) { if (todosHorarios[k] === h) { existe = true; break; } }
+                    if (!existe) todosHorarios.push(h);
+                }
+            }
+            todosHorarios.sort();
+            var almocoRenderizado = false;
+
+            for (var i = 0; i < todosHorarios.length; i++) {
+                var hora = todosHorarios[i];
+                if (!almocoRenderizado && hora > "10:00") {
+                    html += "<tr><td style='text-align:center; font-weight:bold;'>" + rotuloAlmoco + "</td><td colspan='2' class='linha-almoco'>INTERVALO DE ALMOCO</td></tr>";
+                    almocoRenderizado = true;
+                }
+
+                if (dadosCem[hora]) {
+                    var ag = dadosCem[hora];
+                    var badgeObito = ag.obito === "S" ? "<span class='badge badge-ok'>Obito: OK</span>" : "<span class='badge badge-pendente'>Obito: Pendente</span>";
+                    var badgeTaxa = ag.taxa === "S" ? "<span class='badge badge-ok'>Taxa: OK</span>" : "<span class='badge badge-pendente'>Taxa: Pendente</span>";
+                    var badgeSit = "", badgeDocAdicional = "", infoExtraRequerimento = "";
+                    var badgeSocialTag = ag.social === "S" ? "<span class='badge badge-social'>Assistencia Social (Isento)</span>" : "";
+
+                    if (ag.social === "S") badgeTaxa = ""; 
+
+                    if (ag.sit_terreno === "COMPRA") {
+                        badgeSit = "<span class='badge badge-situacao'>Novo Terreno</span>";
+                        badgeDocAdicional = ag.doc_compra === "S" ? "<span class='badge badge-ok'>Compra: OK</span>" : "<span class='badge badge-pendente'>Compra: Pendente</span>";
+                        infoExtraRequerimento = "<br><span style='color:#1F4E79; font-size:11px;'><b>Contrato:</b> CPF: " + (ag.cpf||'-') + " | Est. Civil: " + (ag.est_civil||'-') + " | Parentesco: " + (ag.parentesco||'-') + "<br><b>Endereco:</b> " + (ag.endereco||'-') + "</span>";
+                    } else if (ag.sit_terreno === "GAVETA") {
+                        badgeSit = "<span class='badge badge-gaveta'>Gaveta 5 Anos</span>";
+                    } else if (ag.sit_terreno === "REGULARIZAR") {
+                        badgeSit = "<span class='badge badge-regularizar'>Regularizacao</span>";
+                        badgeDocAdicional = ag.doc_compra === "S" ? "<span class='badge badge-ok'>Regulariz.: OK</span>" : "<span class='badge badge-pendente'>Regulariz.: Pendente</span>";
+                    } else {
+                        badgeSit = "<span class='badge badge-info'>Sepultura Existente</span>";
                     }
 
-                    dados.forEach(item => {
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `
-                            <td style="font-weight: bold; width: 100px;">${item.hora || ''}</td>
-                            <td style="width: 120px;"><span style="color: red; font-weight: bold;">RESERVADO</span></td>
-                            <td>
-                                <strong>Falecido(a):</strong> ${item.falecido || 'Não informado'}<br>
-                                <span style="font-size: 12px; color: #555;">Cemitério: ${item.cem || ''} | Lote: ${item.lote || ''} | Funerária: ${item.funeraria || ''}</span>
-                            </td>
-                        `;
-                        tbody.appendChild(tr);
-                    });
-                })
-                .catch(err => {
-                    console.error('Erro ao carregar:', err);
-                });
+                    if (ag.sit_terreno !== "COMPRA" && ag.sit_terreno !== "REGULARIZAR") {
+                        if (ag.abert === "PRESENTE") badgeDocAdicional = "<span class='badge badge-ok'>Abertura: Proprietario Presente</span>";
+                        else if (ag.abert === "SUCESSOR") badgeDocAdicional = "<span class='badge badge-info'>Abertura: Assinado p/ Sucessor</span>";
+                        else if (ag.abert === "DISTANCIA") badgeDocAdicional = "<span class='badge badge-info'>Abertura: Autorizacao a Distancia</span>";
+                        else if (ag.abert === "PROCURACAO") badgeDocAdicional = "<span class='badge badge-procuracao'>Abertura: Procuracao Anexa</span>";
+                        else badgeDocAdicional = "<span class='badge badge-pendente'>Abertura: Pendente</span>";
+                    }
+
+                    var ehPadrao = false;
+                    for(var p=0; p<listaHorariosPadrao.length; p++) { if(listaHorariosPadrao[p] === hora) { ehPadrao = true; break; } }
+                    var badgeExcecao = !ehPadrao ? "<span class='badge badge-excecao'>Horario Especial</span>" : "";
+
+                    var detalhes = "<span class='info-nome'>" + (ag.falecido || 'Não informado') + "</span>" +
+                                   "<span class='info-detalhes'>" +
+                                   "Lote: " + (ag.lote || '-') + " | Resp: " + (ag.resp || '-') + " | Tel: " + (ag.tel || '-') + "<br>" +
+                                   "Funeraria: " + (ag.funeraria || '-') + "<br>" +
+                                   badgeExcecao + badgeSit + badgeSocialTag + badgeObito + badgeTaxa + badgeDocAdicional +
+                                   infoExtraRequerimento + "</span>";
+
+                    html += "<tr>";
+                    html += "<td style='text-align:center; font-weight:bold; font-size: 14px;'>" + hora + "</td>";
+                    html += "<td class='" + (!ehPadrao ? "status-excecao" : "status-reservado") + "'>" + (!ehPadrao ? "EXCECAO" : "RESERVADO") + "</td>";
+                    html += "<td>" + detalhes + "</td>";
+                    html += "</tr>";
+                } else {
+                    html += "<tr><td style='text-align:center; font-weight:bold; font-size: 14px;'>" + hora + "</td><td class='status-livre'>DISPONIVEL</td><td style='color:#999; text-align:center;'>-</td></tr>";
+                }
+            }
+            html += "</table>";
+            document.getElementById(idContainer).innerHTML = html;
         }
 
         function abrirModalLogin() {
-            document.getElementById('modalLogin').style.display = 'flex';
+            document.getElementById("modalLogin").style.display = "flex";
         }
 
         function fecharModalLogin() {
-            document.getElementById('modalLogin').style.display = 'none';
-            document.getElementById('senhaAdmin').value = '';
+            document.getElementById("modalLogin").style.display = "none";
+            document.getElementById("senhaAdmin").value = "";
         }
 
         function fazerLogin() {
-            const senha = document.getElementById('senhaAdmin').value;
-            
+            var senha = document.getElementById("senhaAdmin").value;
             fetch('/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ senha: senha })
             })
-            .then(response => response.json())
+            .then(res => res.json())
             .then(data => {
                 if (data.sucesso) {
                     window.location.href = '/admin';
@@ -191,10 +335,7 @@
                     alert(data.erro || 'Senha incorreta!');
                 }
             })
-            .catch(error => {
-                console.error('Erro:', error);
-                alert('Erro ao tentar fazer login.');
-            });
+            .catch(err => alert('Erro ao fazer login.'));
         }
     </script>
 </body>
