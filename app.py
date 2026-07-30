@@ -9,23 +9,22 @@ app.secret_key = "sua_chave_secreta_super_segura"
 
 # --- CONFIGURAÇÃO DO SUPABASE ---
 SUPABASE_URL = "https://gbupmlhrihhyirwnrjtz.supabase.co"
-SUPABASE_KEY = "sb_publishable_opFBH512ka6va3taMRnUKg_ayugnLeF"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndtaGFhdGNxdXdxa3FtbmttaWl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzNDc1MjUsImV4cCI6MjEwMDkyMzUyNX0.pig6MhzDPxVWFkREiyjWQHQWOG_-hHoB-OcdnovzpfU"
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# 1. PÁGINA PÚBLICA (Qualquer um acessa pelo link do Render ou navegador)
+# 1. PÁGINA PÚBLICA (Render / Celular / Visitantes - Apenas Visualização)
 @app.route('/')
 def index():
-    # Aqui você renderiza a página de visualização (ex: o agendaonline renomeado para index)
     return render_template('index.html')
 
-# 2. TELA DE LOGIN DO ADMINISTRADOR
+# 2. ROTA DE VALIDAÇÃO DE LOGIN DO ADMINISTRADOR
 @app.route('/login', methods=['POST'])
 def login():
     dados = request.json
     senha_digitada = dados.get('senha')
     
-    # Defina aqui a senha de administrador que você preferir
+    # Defina aqui a senha de administrador desejada
     if senha_digitada == "admin123": 
         session['logado'] = True
         return jsonify({"sucesso": True})
@@ -35,9 +34,8 @@ def login():
 # 3. PAINEL ADMINISTRATIVO (Versão completa de cadastro, edição e exclusão)
 @app.route('/admin')
 def admin():
-    # Se estiver logado via web OU se for o uso local, libera o painel completo
     if session.get('logado'):
-        return render_template('agenda_completa.html') # ou o nome da sua tela de gestão
+        return render_template('admin.html')
     else:
         return redirect(url_for('index'))
 
