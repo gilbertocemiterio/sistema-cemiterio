@@ -13,7 +13,6 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 @app.route('/')
 def index():
-    # Corrigido para apontar para o nome correto do arquivo na pasta templates
     return render_template('agendaonline.html')
 
 @app.route('/api/agendamentos', methods=['GET'])
