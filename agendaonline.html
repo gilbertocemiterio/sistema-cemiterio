@@ -37,9 +37,8 @@
         .status-livre { background-color: #E2EFDA; color: #385723; font-weight: bold; text-align: center; }
         .status-reservado { background-color: #FCE4D6; color: #C00000; font-weight: bold; text-align: center; }
         .linha-almoco { background-color: #F2F2F2; color: #7F8C8D; font-style: italic; text-align: center; }
-        .info-nome { font-size: 13px; font-weight: bold; color: #111; display: block; margin-bottom: 3px; }
-        .info-detalhes { font-size: 11px; color: #333; line-height: 1.3; }
-        .info-gravado { font-size: 10px; color: #C00000; font-style: italic; display: block; margin-top: 2px; }
+        .info-nome { font-size: 12px; font-weight: bold; color: #111; display: block; margin-bottom: 2px; }
+        .info-detalhes { font-size: 10px; color: #333; line-height: 1.3; }
     </style>
 </head>
 <body onload="initApp()">
@@ -138,29 +137,12 @@
         function pedirAtualizacaoNuvem() {
             var dataSelecionada = document.getElementById("txtData").value.trim();
             if (window.AppInventor) {
-                // Solicita ao MIT App Inventor que busque a API passando a data atual
                 window.AppInventor.setWebViewString(dataSelecionada);
             } else {
-                // Modo navegador web comum (computador/site)
                 fetch('/api/agendamentos?data=' + encodeURIComponent(dataSelecionada))
                     .then(response => response.json())
                     .then(data => processarDadosEAtualizar(data))
                     .catch(err => console.error("Erro ao buscar dados:", err));
-            }
-        }
-
-        // Chamado pelo App Inventor quando ele recebe o JSON da nuvem
-        function atualizarTela() {
-            if (window.AppInventor) {
-                var jsonTexto = window.AppInventor.getWebViewString();
-                if (jsonTexto && jsonTexto.trim() !== "" && jsonTexto !== "ATUALIZAR") {
-                    try {
-                        var dadosJson = JSON.parse(jsonTexto);
-                        processarDadosEAtualizar(dadosJson);
-                    } catch(e) {
-                        console.error("Erro ao interpretar JSON do App Inventor:", e);
-                    }
-                }
             }
         }
 
@@ -188,7 +170,7 @@
 
         function renderizarTabela(idContainer, listaHorariosPadrao, dadosCem, rotuloAlmoco) {
             var html = "<table>";
-            html += "<tr><th style='width:50px; text-align:center;'>Hora</th><th style='width:75px; text-align:center;'>Status</th><th>Detalhes</th></tr>";
+            html += "<tr><th style='width:45px; text-align:center;'>Hora</th><th style='width:75px; text-align:center;'>Status</th><th>Detalhes do Agendamento</th><th style='width:40px; text-align:center;'>Acoes</th></tr>";
             
             var todosHorarios = [].concat(listaHorariosPadrao);
             for (var h in dadosCem) {
@@ -202,33 +184,28 @@
             for (var i = 0; i < todosHorarios.length; i++) {
                 var hora = todosHorarios[i];
                 if (!almocoRenderizado && hora > "10:00") {
-                    html += "<tr><td style='text-align:center; font-weight:bold;'>" + rotuloAlmoco + "</td><td colspan='2' class='linha-almoco'>ALMOCO</td></tr>";
+                    html += "<tr><td style='text-align:center; font-weight:bold;'>" + rotuloAlmoco + "</td><td colspan='3' class='linha-almoco'>INTERVALO DE ALMOCO</td></tr>";
                     almocoRenderizado = true;
                 }
 
                 if (dadosCem[hora]) {
                     var ag = dadosCem[hora];
-                    var detalhesHtml = "<span class='info-nome'>" + (ag.falecido || "NÃO INFORMADO") + "</span>" +
+                    var detalhesHtml = "<span class='info-nome'>Falecido(a): " + (ag.falecido || "NÃO INFORMADO") + "</span>" +
                                        "<span class='info-detalhes'>" +
-                                       "Lote: " + (ag.lote || "-") + "<br>" +
-                                       "Resp: " + (ag.resp || "-") + " | Tel: " + (ag.tel || "-") + "<br>" +
-                                       "Funerária: " + (ag.funeraria || "-");
-                    
-                    if (ag.estcivil && ag.estcivil !== "-0" && ag.estcivil !== "-") detalhesHtml += "<br>Estado Civil: " + ag.estcivil;
-                    if (ag.parentesco && ag.parentesco !== "-") detalhesHtml += " | Parentesco: " + ag.parentesco;
-                    if (ag.endereco && ag.endereco !== "-") detalhesHtml += "<br>Endereço: " + ag.endereco;
-                    if (ag.cpf && ag.cpf !== "-0" && ag.cpf !== "-") detalhesHtml += "<br>CPF: " + ag.cpf;
-                    if (ag.datacriacao && ag.datacriacao !== "-") {
-                        detalhesHtml += "<span class='info-gravado'>Gravado em: " + ag.datacriacao + "</span>";
-                    }
-
-                    detalhesHtml += "</span>";
+                                       "Sepultura/Lote: " + (ag.lote || "-") + "<br>" +
+                                       "Funerária: " + (ag.funeraria || "-") + "<br>" +
+                                       "Responsável: " + (ag.resp || "-") + " | Tel: " + (ag.tel || "-") +
+                                       "</span>";
 
                     html += "<tr><td style='text-align:center; font-weight:bold;'>" + hora + "</td>";
                     html += "<td class='status-reservado'>RESERVADO</td>";
-                    html += "<td>" + detalhesHtml + "</td></tr>";
+                    html += "<td>" + detalhesHtml + "</td>";
+                    html += "<td style='text-align:center; color:#7F8C8D;'>-</td></tr>";
                 } else {
-                    html += "<tr><td style='text-align:center; font-weight:bold;'>" + hora + "</td><td class='status-livre'>LIVRE</td><td style='color:#999; text-align:center;'>-</td></tr>";
+                    html += "<tr><td style='text-align:center; font-weight:bold;'>" + hora + "</td>";
+                    html += "<td class='status-livre'>DISPONÍVEL</td>";
+                    html += "<td style='color:#999; text-align:center;'>-</td>";
+                    html += "<td style='text-align:center; color:#7F8C8D;'>-</td></tr>";
                 }
             }
             html += "</table>";
