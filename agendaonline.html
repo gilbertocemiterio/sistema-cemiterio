@@ -90,6 +90,12 @@
             }, 1000);
 
             renderizarCalendarioLayout();
+            
+            // Desenha as tabelas vazias (LIVRE) imediatamente ao abrir
+            renderizarTabela("containerCentral", horariosCentral, {}, "11h-13h");
+            renderizarTabela("containerRecanto", horariosRecanto, {}, "11h-13h30");
+
+            // Em seguida, pede os dados atualizados para a nuvem
             pedirAtualizacaoNuvem();
         }
 
@@ -101,6 +107,10 @@
         function selecionarDataCalendario(dia, mes, ano) {
             document.getElementById("txtData").value = formatarDoisDigitos(dia) + "/" + formatarDoisDigitos(mes) + "/" + ano;
             renderizarCalendarioLayout();
+            
+            // Desenha as tabelas vazias para o dia selecionado e busca na nuvem
+            renderizarTabela("containerCentral", horariosCentral, {}, "11h-13h");
+            renderizarTabela("containerRecanto", horariosRecanto, {}, "11h-13h30");
             pedirAtualizacaoNuvem();
         }
 
@@ -170,7 +180,7 @@
 
         function renderizarTabela(idContainer, listaHorariosPadrao, dadosCem, rotuloAlmoco) {
             var html = "<table>";
-            html += "<tr><th style='width:45px; text-align:center;'>Hora</th><th style='width:75px; text-align:center;'>Status</th><th>Detalhes do Agendamento</th><th style='width:40px; text-align:center;'>Acoes</th></tr>";
+            html += "<tr><th style='width:45px; text-align:center;'>Hora</th><th style='width:75px; text-align:center;'>Status</th><th>Detalhes</th></tr>";
             
             var todosHorarios = [].concat(listaHorariosPadrao);
             for (var h in dadosCem) {
@@ -184,7 +194,7 @@
             for (var i = 0; i < todosHorarios.length; i++) {
                 var hora = todosHorarios[i];
                 if (!almocoRenderizado && hora > "10:00") {
-                    html += "<tr><td style='text-align:center; font-weight:bold;'>" + rotuloAlmoco + "</td><td colspan='3' class='linha-almoco'>INTERVALO DE ALMOCO</td></tr>";
+                    html += "<tr><td style='text-align:center; font-weight:bold;'>" + rotuloAlmoco + "</td><td colspan='2' class='linha-almoco'>ALMOCO</td></tr>";
                     almocoRenderizado = true;
                 }
 
@@ -199,13 +209,11 @@
 
                     html += "<tr><td style='text-align:center; font-weight:bold;'>" + hora + "</td>";
                     html += "<td class='status-reservado'>RESERVADO</td>";
-                    html += "<td>" + detalhesHtml + "</td>";
-                    html += "<td style='text-align:center; color:#7F8C8D;'>-</td></tr>";
+                    html += "<td>" + detalhesHtml + "</td></tr>";
                 } else {
                     html += "<tr><td style='text-align:center; font-weight:bold;'>" + hora + "</td>";
-                    html += "<td class='status-livre'>DISPONÍVEL</td>";
-                    html += "<td style='color:#999; text-align:center;'>-</td>";
-                    html += "<td style='text-align:center; color:#7F8C8D;'>-</td></tr>";
+                    html += "<td class='status-livre'>LIVRE</td>";
+                    html += "<td style='color:#999; text-align:center;'>-</td></tr>";
                 }
             }
             html += "</table>";
