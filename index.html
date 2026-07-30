@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Controle de Sepultamentos - Paranavai</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #F5F7FA; color: #333; }
+        .topo { background-color: #1F4E79; color: white; padding: 15px; display: flex; align-items: center; justify-content: space-between; }
+        .titulo { font-size: 18px; font-weight: bold; margin: 0; display: flex; width: 100%; align-items: center; justify-content: space-between; }
+        .busca-bloco { display: flex; align-items: center; }
+        .busca-container { display: inline-block; margin-left: 15px; vertical-align: middle; }
+        .busca-container input { padding: 6px; font-size: 14px; text-align: center; width: 110px; border-radius: 4px; border: none; font-weight: bold; }
+        .relogio-container { display: inline-block; font-family: 'Consolas', monospace; font-size: 20px; font-weight: bold; background-color: #153654; padding: 5px 12px; border-radius: 4px; border: 1px solid #2d6596; color: #00FFCC; }
+        button { padding: 6px 12px; font-size: 12px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-buscar { background-color: #DDEBF7; color: #1F4E79; margin-left: 10px; }
+        .btn-novo { background-color: #2E7D32; color: white; float: right; margin-right: 15px; margin-top: 5px; position: relative; z-index: 5; }
+        .corpo-principal { display: table; width: 100%; table-layout: fixed; }
+        .lado-esquerdo { display: table-cell; width: 260px; vertical-align: top; padding: 15px 5px 15px 15px; box-sizing: border-box; }
+        .lado-direito { display: table-cell; vertical-align: top; padding: 15px 15px 15px 5px; box-sizing: border-box; }
+        .corpo { display: table; width: 100%; table-layout: fixed; }
+        .coluna { display: table-cell; width: 50%; padding: 5px; box-sizing: border-box; }
+        .card { background: white; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); padding: 15px; }
+        .titulo-central { color: #1F4E79; border-bottom: 2px solid #1F4E79; padding-bottom: 5px; margin-top: 0; }
+        .titulo-recanto { color: #2E7D32; border-bottom: 2px solid #2E7D32; padding-bottom: 5px; margin-top: 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
+        th, td { border: 1px solid #D9D9D9; padding: 8px; text-align: left; font-size: 13px; word-wrap: break-word; }
+        th { background-color: #F2F2F2; font-weight: bold; }
+        .status-livre { background-color: #E2EFDA; color: #385723; font-weight: bold; text-align: center; }
+        .status-reservado { background-color: #FCE4D6; color: #C00000; font-weight: bold; text-align: center; }
+        .status-excecao { background-color: #FFF2CC; color: #B25900; font-weight: bold; text-align: center; }
+        .linha-almoco { background-color: #F2F2F2; color: #7F8C8D; font-style: italic; text-align: center; }
+        .calendario-card { background: white; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); padding: 12px; }
+        .cal-topo { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; background: #1F4E79; color: white; padding: 5px; border-radius: 4px; }
+        .cal-topo button { background: #153654; color: white; padding: 3px 8px; font-size: 14px; }
+        .cal-mes-ano { font-weight: bold; font-size: 13px; }
+        .cal-grade { display: table; width: 100%; table-layout: fixed; text-align: center; }
+        .cal-linha { display: table-row; }
+        .cal-cabecalho { display: table-cell; font-weight: bold; font-size: 11px; padding: 4px 0; background: #EEE; border: 1px solid #DDD; color: #555; }
+        .cal-dia { display: table-cell; padding: 6px 0; font-size: 12px; border: 1px solid #EEE; cursor: pointer; font-weight: bold; color: #333; }
+        .cal-dia:hover { background: #DDEBF7; }
+        .cal-dia-vazio { display: table-cell; background: #FAFAFA; border: 1px solid #F5F5F5; }
+        .cal-dia-selecionado { background: #1F4E79 !important; color: white !important; border: 1px solid #1F4E79; }
+        .cal-dia-hoje { border: 2px solid #2E7D32; color: #2E7D32; }
+        .info-nome { font-size: 16px; font-weight: bold; color: #111; display: block; margin-bottom: 4px; }
+        .info-detalhes { font-size: 13px; color: #333; line-height: 1.5; }
+        .info-criacao { font-size: 11px; color: #E65100; font-style: italic; font-weight: bold; display: block; margin-top: 5px; }
+        .btn-acao { padding: 4px 8px; font-size: 11px; margin-left: 3px; font-weight: bold; }
+        .btn-alterar { background-color: #FFC107; color: #333; }
+        .btn-excluir { background-color: #E53935; color: white; }
+        .badge { display: inline-block; padding: 3px 6px; font-size: 11px; font-weight: bold; border-radius: 3px; margin-top: 5px; margin-right: 5px; }
+        .badge-ok { background-color: #C6EFCE; color: #006100; }
+        .badge-pendente { background-color: #FFC7CE; color: #9C0006; }
+        .badge-info { background-color: #DDEBF7; color: #1F4E79; }
+        .badge-procuracao { background-color: #D1C4E9; color: #4527A0; }
+        .badge-situacao { background-color: #E1F5FE; color: #0288D1; }
+        .badge-compra { background-color: #FFE0B2; color: #E65100; }
+        .badge-regularizar { background-color: #FFE0B2; color: #BF360C; }
+        .badge-social { background-color: #E2EFDA; color: #385723; }
+        .badge-gaveta { background-color: #F2F2F2; color: #595959; }
+        .badge-excecao { background-color: #D97706; color: #FFF; }
+        .modal { display: none; position: fixed; z-index: 10; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); }
+        .modal-content { background-color: white; margin: 0.5% auto; padding: 20px; border-radius: 6px; width: 420px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); max-height: 95%; overflow-y: auto; }
+        .modal-content label { display: block; margin-top: 8px; font-weight: bold; font-size: 11px; color: #555; }
+        .modal-content input[type="text"], .modal-content select { width: 100%; padding: 6px; margin-top: 3px; box-sizing: border-box; border: 1px solid #CCC; border-radius: 4px; font-size: 13px; }
+        .checkbox-container { margin-top: 10px; background-color: #F9F9F9; padding: 8px; border-radius: 4px; border: 1px dashed #DDD; }
+        .checkbox-line { display: block; margin-bottom: 5px; cursor: pointer; font-size: 11px; font-weight: bold; }
+        .checkbox-line input { margin-right: 8px; vertical-align: middle; }
+        .btn-salvar { background-color: #2E7D32; color: white; width: 100%; padding: 10px; margin-top: 15px; font-size: 14px; }
+        .container-requerimento { background-color: #EBF1F5; border: 1px solid #B4C6E7; padding: 10px; border-radius: 4px; margin-top: 8px; }
+        .container-social { background-color: #E2EFDA; border: 1px dashed #385723; padding: 8px; border-radius: 4px; margin-top: 8px; }
+        .bloco-horario-custom { background-color: #FFF8E1; border: 1px solid #FFE082; padding: 8px; border-radius: 4px; margin-top: 8px; }
+    </style>
+</head>
+<body onload="window_onload()">
+
+    <div class="topo">
+        <div class="titulo">
+            <div class="busca-bloco">
+                ADMINISTRACAO DE CEMITERIOS - PARANAVAI
+                <div class="busca-container">
+                    <input type="text" id="txtData" oninput="mascaraData(this)" maxlength="10" />
+                    <button class="btn-buscar" onclick="carregarDados()">Buscar</button>
+                </div>
+            </div>
+            <div id="txtRelogio" class="relogio-container">00:00:00</div>
+        </div>
+    </div>
+
+    <button class="btn-novo" onclick="window.abrirModalNovo()">+ Novo Agendamento</button>
+
+    <div class="corpo-principal">
+        <div class="lado-esquerdo">
+            <div class="calendario-card">
+                <div class="cal-topo">
+                    <button onclick="mudarMes(-1)">&lt;</button>
+                    <div id="calMesAno" class="cal-mes-ano"></div>
+                    <button onclick="mudarMes(1)">&gt;</button>
+                </div>
+                <div id="calendarioGrade" class="cal-grade"></div>
+            </div>
+        </div>
+        <div class="lado-direito">
+            <div class="corpo">
+                <div class="coluna">
+                    <div class="card">
+                        <h3 class="titulo-central">CEMITERIO MUNICIPAL CENTRAL</h3>
+                        <div id="containerCentral"></div>
+                    </div>
+                </div>
+                <div class="coluna">
+                    <div class="card">
+                        <h3 class="titulo-recanto">PARQUE RECANTO DA SAUDADE</h3>
+                        <div id="containerRecanto"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalAgendar" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitulo" style="margin-top:0; color:#1F4E79; margin-bottom: 8px;">Novo Agendamento</h3>
+            <input type="hidden" id="formModoEdicao" value="nao" />
+            <input type="hidden" id="formIdRegistro" value="" />
+            <input type="hidden" id="formDataCriacao" value="" />
+
+            <label>Data do Sepultamento:</label>
+            <input type="text" id="formData" oninput="mascaraData(this)" maxlength="10" />
+
+            <label>Cemiterio:</label>
+            <select id="formCem" onchange="window.atualizarFormHorarios()"></select>
+
+            <label>Horario Padrao:</label>
+            <select id="formHora"></select>
+
+            <div class="bloco-horario-custom">
+                <label style="margin-top:0; color:#B25900;">Horario de Excecao / Especial (Opcional):</label>
+                <input type="text" id="formHoraCustom" placeholder="Ex: 15:30 (Sobrescreve o padrao)" maxlength="5" />
+            </div>
+
+            <label>Situacao da Sepultura:</label>
+            <select id="formSitTerreno" onchange="window.ajustarCamposTerreno()">
+                <option value="EXISTENTE">Sepultura Ja Existente</option>
+                <option value="COMPRA">Compra de Terreno Novo (Perpetua)</option>
+                <option value="GAVETA">Gaveta Temporaria (5 Anos)</option>
+                <option value="REGULARIZAR">Regularizacao de Sepultura</option>
+            </select>
+
+            <div class="container-social">
+                <label style="margin-top:0; color:#2E7D32;">Atendimento por Assistencia Social (Carente)?</label>
+                <select id="formAssistSocial" onchange="window.ajustarCamposTerreno()">
+                    <option value="N">Nao</option>
+                    <option value="S">Sim (Isento de Taxas)</option>
+                </select>
+            </div>
+
+            <label>Nome do Falecido:</label>
+            <input type="text" id="formFalecido" />
+
+            <label>Quadra / Lote:</label>
+            <input type="text" id="formLote" />
+
+            <label>Nome do Responsavel:</label>
+            <input type="text" id="formResp" />
+
+            <label>CPF do Responsavel:</label>
+            <input type="text" id="formCpf" placeholder="000.000.000-00" />
+
+            <label>Telefone do Responsavel:</label>
+            <input type="text" id="formTel" placeholder="(44) 99999-9999" />
+
+            <div id="divRequerimentoCompra" class="container-requerimento" style="display:none;">
+                <span style="font-size:11px; color:#1F4E79; font-weight:bold; display:block; margin-bottom:4px;">Dados Complementares para Aquisicao / Regularizacao:</span>
+                <label style="margin-top:4px;">Estado Civil do Responsavel:</label>
+                <select id="formEstadoCivil">
+                    <option value="SOLTEIRO(A)">Solteiro(a)</option>
+                    <option value="CASADO(A)">Casado(a)</option>
+                    <option value="DIVORCIADO(A)">Divorciado(a)</option>
+                    <option value="VIÚVO(A)">Viuvo(a)</option>
+                    <option value="UNIÃO ESTÁVEL">Uniao Estavel</option>
+                </select>
+                <label style="margin-top:4px;">Grau de Parentesco com o Falecido:</label>
+                <input type="text" id="formParentesco" placeholder="Ex: Filho, Conjuge, Irmao..." />
+                <label style="margin-top:4px;">Endereco Completo do Responsavel:</label>
+                <input type="text" id="formEndereco" placeholder="Rua, No, Bairro - Cidade" />
+            </div>
+
+            <label>Funeraria:</label>
+            <input type="text" id="formFuneraria" placeholder="Ex: Funeraria Paranavai" />
+
+            <label id="lblAutorizacaoAbertura">Autorizacao para Abertura de Sepultura:</label>
+            <select id="formAutorizacaoAbertura">
+                <option value="PENDENTE">Pendente (Nao Entregue)</option>
+                <option value="PRESENTE">Nao Necessaria (Proprietario presente)</option>
+                <option value="SUCESSOR">Assinada pelo Sucessor (Proprietario falecido)</option>
+                <option value="DISTANCIA">Autorizacao a Distancia (Indicacao de terceiro)</option>
+                <option value="PROCURACAO">Assinada por Procurador (Procuracao anexa)</option>
+            </select>
+
+            <div class="checkbox-container">
+                <span style="font-size:11px; color:#1F4E79; font-weight:bold; display:block; margin-bottom:6px;">Controle de Documentos:</span>
+                <label class="checkbox-line" id="containerCheckObito"><input type="checkbox" id="formObitoEntregue" /> Atestado de Obito Entregue</label>
+                <label class="checkbox-line" id="containerCheckTaxa"><input type="checkbox" id="formTaxaEntregue" /> Boleto da Taxa Entregue</label>
+                <label class="checkbox-line" id="containerCheckCompra" style="display:none; color: #E65100;"><input type="checkbox" id="formCompraEntregue" /> <span id="txtLabelCheckCompra">Documentacao de Compra Entregue</span></label>
+            </div>
+
+            <button class="btn-salvar" onclick="window.salvarAgendamento()">Confirmar e Gravar</button>
+            <button style="background-color:#7F8C8D; color:white; width:100%; padding:8px; margin-top:5px; border:none; border-radius:4px;" onclick="window.fecharModal()">Cancelar</button>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        var horariosCentral = ["08:00", "09:00", "10:00", "13:00", "14:00", "15:00", "16:00"];
+        var horariosRecanto = ["08:00", "09:00", "10:00", "13:30", "14:20", "15:10", "15:45"];
+        var nomesMeses = ["Janeiro", "Fevereiro", "Marco", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+        var dataCalendarioAtual = new Date(); 
+
+        function mascaraData(campo) {
+            var v = campo.value.replace(/\D/g, ""); 
+            if (v.length >= 2) v = v.substring(0, 2) + "/" + v.substring(2);
+            if (v.length >= 5) v = v.substring(0, 5) + "/" + v.substring(5, 9);
+            campo.value = v;
+        }
+
+        function formatarDoisDigitos(numero) { return (numero < 10 ? '0' : '') + numero; }
+
+        function iniciarRelogio() {
+            setInterval(function() {
+                var agora = new Date();
+                document.getElementById("txtRelogio").innerText = formatarDoisDigitos(agora.getHours()) + ":" + formatarDoisDigitos(agora.getMinutes()) + ":" + formatarDoisDigitos(agora.getSeconds());
+            }, 1000);
+        }
+
+        function window_onload() {
+            iniciarRelogio();
+            var hoje = new Date();
+            document.getElementById("txtData").value = formatarDoisDigitos(hoje.getDate()) + "/" + formatarDoisDigitos(hoje.getMonth() + 1) + "/" + hoje.getFullYear();
+            renderizarCalendarioLayout();
+            carregarDados();
+        }
+
+        function mudarMes(direcao) {
+            dataCalendarioAtual.setMonth(dataCalendarioAtual.getMonth() + direcao);
+            renderizarCalendarioLayout();
+        }
+
+        function selecionarDataCalendario(dia, mes, ano) {
+            document.getElementById("txtData").value = formatarDoisDigitos(dia) + "/" + formatarDoisDigitos(mes) + "/" + ano;
+            renderizarCalendarioLayout();
+            carregarDados();
+        }
+
+        function renderizarCalendarioLayout() {
+            var mes = dataCalendarioAtual.getMonth(), ano = dataCalendarioAtual.getFullYear();
+            var elementoMesAno = document.getElementById("calMesAno");
+            if (elementoMesAno) {
+                elementoMesAno.innerText = nomesMeses[mes] + " de " + ano;
+            }
+            
+            var dataCorrente = document.getElementById("txtData").value.trim();
+            var hoje = new Date();
+            var primeiroDiaSemana = new Date(ano, mes, 1).getDay(), totalDiasMes = new Date(ano, mes + 1, 0).getDate();
+
+            var html = "<div class='cal-linha'>";
+            var diasSemana = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"];
+            for (var i = 0; i < 7; i++) html += "<div class='cal-cabecalho'>" + diasSemana[i] + "</div>";
+            html += "</div><div class='cal-linha'>";
+
+            var colunaConta = 0;
+            for (var i = 0; i < primeiroDiaSemana; i++) { html += "<div class='cal-dia-vazio'></div>"; colunaConta++; }
+
+            for (var diaItem = 1; diaItem <= totalDiasMes; diaItem++) {
+                if (colunaConta === 7) { html += "</div><div class='cal-linha'>"; colunaConta = 0; }
+                var strDataItem = formatarDoisDigitos(diaItem) + "/" + formatarDoisDigitos(mes + 1) + "/" + ano;
+                var classeEstilo = "cal-dia";
+                if (strDataItem === dataCorrente) classeEstilo += " cal-dia-selecionado";
+                if (diaItem === hoje.getDate() && mes === hoje.getMonth() && ano === hoje.getFullYear()) classeEstilo += " cal-dia-hoje";
+                html += "<div class='" + classeEstilo + "' onclick='selecionarDataCalendario(" + diaItem + "," + (mes + 1) + "," + ano + ")'>" + diaItem + "</div>";
+                colunaConta++;
+            }
+            while (colunaConta < 7) { html += "<div class='cal-dia-vazio'></div>"; colunaConta++; }
+            html += "</div>";
+            
+            var elementoGrade = document.getElementById("calendarioGrade");
+            if (elementoGrade) {
+                elementoGrade.innerHTML = html;
+            }
+        }
+
+        window.ajustarCamposTerreno = function() {
+            var sit = document.getElementById("formSitTerreno").value, social = document.getElementById("formAssistSocial").value;
+            var lblAut = document.getElementById("lblAutorizacaoAbertura"), selAut = document.getElementById("formAutorizacaoAbertura");
+            var checkCompra = document.getElementById("containerCheckCompra"), labelCheck = document.getElementById("txtLabelCheckCompra"), checkTaxa = document.getElementById("containerCheckTaxa"), divRequerimento = document.getElementById("divRequerimentoCompra");
+
+            lblAut.style.display = "block"; selAut.style.display = "block"; checkTaxa.style.display = "block";
+            checkCompra.style.display = "none"; divRequerimento.style.display = "none";
+
+            if (social === "S") {
+                if (sit === "COMPRA") {
+                    alert("Assistencia Social nao realiza compra de terrenos novos.");
+                    document.getElementById("formSitTerreno").value = "EXISTENTE"; sit = "EXISTENTE";
+                }
+                checkTaxa.style.display = "none"; document.getElementById("formTaxaEntregue").checked = false;
+            }
+
+            if (sit === "COMPRA") {
+                lblAut.style.display = "none"; selAut.style.display = "none"; selAut.value = "PRESENTE"; 
+                checkCompra.style.display = "block"; divRequerimento.style.display = "block";
+                labelCheck.innerText = "Documentacao de Compra Entregue"; checkCompra.style.color = "#E65100";
+            } else if (sit === "REGULARIZAR") {
+                lblAut.style.display = "none"; selAut.style.display = "none"; selAut.value = "PRESENTE"; 
+                checkCompra.style.display = "block"; labelCheck.innerText = "Documentacao de Regularizacao Entregue"; checkCompra.style.color = "#BF360C";
+            }
+        }
+
+        window.atualizarFormHorarios = function(horarioSelecionado) {
+            var cem = document.getElementById("formCem").value, selectHora = document.getElementById("formHora");
+            selectHora.options.length = 0; 
+            var list = (cem === "Central") ? horariosCentral : horariosRecanto;
+            for (var i = 0; i < list.length; i++) {
+                var opt = document.createElement("option");
+                opt.value = list[i]; opt.text = list[i];
+                selectHora.add(opt);
+            }
+            if (horarioSelecionado) selectHora.value = horarioSelecionado;
+        }
+
+        function carregarDados() {
+            var dataAlvo = document.getElementById("txtData").value.trim();
+            
+            fetch('/api/agendamentos?data=' + encodeURIComponent(dataAlvo))
+                .then(response => response.json())
+                .then(data => {
+                    var agendamentos = { "Central": {}, "Recanto": {} };
+                    
+                    data.forEach(item => {
+                        var cemOriginal = item.cem ? item.cem.trim() : "";
+                        var cemChave = "";
+                        if (cemOriginal.toLowerCase().indexOf("central") !== -1) cemChave = "Central";
+                        if (cemOriginal.toLowerCase().indexOf("recanto") !== -1) cemChave = "Recanto";
+
+                        if (cemChave !== "") {
+                            var horaRegistro = item.hora ? item.hora.trim() : "00:00";
+                            agendamentos[cemChave][horaRegistro] = item;
+                        }
+                    });
+
+                    renderizarTabela("containerCentral", "Central", horariosCentral, agendamentos["Central"], "11h-13h");
+                    renderizarTabela("containerRecanto", "Recanto", horariosRecanto, agendamentos["Recanto"], "11h-13h30");
+                    renderizarCalendarioLayout();
+                })
+                .catch(err => console.error("Erro ao buscar dados:", err));
+        }
+
+        function renderizarTabela(idContainer, cemiterio, listaHorariosPadrao, dadosCem, rotuloAlmoco) {
+            var html = "<table>";
+            html += "<tr><th style='width:55px; text-align:center;'>Hora</th><th style='width:95px; text-align:center;'>Status</th><th>Detalhes do Agendamento</th><th style='width:115px; text-align:center;'>Acoes</th></tr>";
+            
+            var todosHorarios = [].concat(listaHorariosPadrao);
+            for (var h in dadosCem) {
+                if (dadosCem.hasOwnProperty(h)) {
+                    var existe = false;
+                    for (var k = 0; k < todosHorarios.length; k++) { if (todosHorarios[k] === h) { existe = true; break; } }
+                    if (!existe) todosHorarios.push(h);
+                }
+            }
+            todosHorarios.sort();
+            var almocoRenderizado = false;
+
+            for (var i = 0; i < todosHorarios.length; i++) {
+                var hora = todosHorarios[i];
+                if (!almocoRenderizado && hora > "10:00") {
+                    html += "<tr><td style='text-align:center; font-weight:bold;'>" + rotuloAlmoco + "</td><td colspan='3' class='linha-almoco'>INTERVALO DE ALMOCO</td></tr>";
+                    almocoRenderizado = true;
+                }
+
+                if (dadosCem[hora]) {
+                    var ag = dadosCem[hora];
+                    var badgeObito = ag.obito === "S" ? "<span class='badge badge-ok'>Obito: OK</span>" : "<span class='badge badge-pendente'>Obito: Pendente</span>";
+                    var badgeTaxa = ag.taxa === "S" ? "<span class='badge badge-ok'>Taxa: OK</span>" : "<span class='badge badge-pendente'>Taxa: Pendente</span>";
+                    var badgeSit = "", badgeDocAdicional = "", infoExtraRequerimento = "";
+                    var badgeSocialTag = ag.social === "S" ? "<span class='badge badge-social'>Assistencia Social (Isento)</span>" : "";
+
+                    if (ag.social === "S") badgeTaxa = ""; 
+
+                    var infoCpfExibicao = (ag.cpf && ag.cpf !== "-" && ag.cpf !== "-0") ? " | CPF: " + ag.cpf : "";
+
+                    if (ag.sit_terreno === "COMPRA") {
+                        badgeSit = "<span class='badge badge-situacao'>Novo Terreno</span>";
+                        badgeDocAdicional = ag.doc_compra === "S" ? "<span class='badge badge-ok'>Compra: OK</span>" : "<span class='badge badge-pendente'>Compra: Pendente</span>";
+                        infoExtraRequerimento = "<br><span style='color:#1F4E79; font-size:11px;'><b>Contrato:</b> Est. Civil: " + (ag.est_civil||"-") + " | Parentesco: " + (ag.parentesco||"-") + "<br><b>Endereco:</b> " + (ag.endereco||"-") + "</span>";
+                    } else if (ag.sit_terreno === "GAVETA") {
+                        badgeSit = "<span class='badge badge-gaveta'>Gaveta 5 Anos</span>";
+                    } else if (ag.sit_terreno === "REGULARIZAR") {
+                        badgeSit = "<span class='badge badge-regularizar'>Regularizacao</span>";
+                        badgeDocAdicional = ag.doc_compra === "S" ? "<span class='badge badge-ok'>Regulariz.: OK</span>" : "<span class='badge badge-pendente'>Regulariz.: Pendente</span>";
+                    } else {
+                        badgeSit = "<span class='badge badge-info'>Sepultura Existente</span>";
+                    }
+
+                    if (ag.sit_terreno !== "COMPRA" && ag.sit_terreno !== "REGULARIZAR") {
+                        if (ag.abert === "PRESENTE") badgeDocAdicional = "<span class='badge badge-ok'>Abertura: Proprietario Presente</span>";
+                        else if (ag.abert === "SUCESSOR") badgeDocAdicional = "<span class='badge badge-info'>Abertura: Assinado p/ Sucessor</span>";
+                        else if (ag.abert === "DISTANCIA") badgeDocAdicional = "<span class='badge badge-info'>Abertura: Autorizacao a Distancia</span>";
+                        else if (ag.abert === "PROCURACAO") badgeDocAdicional = "<span class='badge badge-procuracao'>Abertura: Procuracao Anexa</span>";
+                        else badgeDocAdicional = "<span class='badge badge-pendente'>Abertura: Pendente</span>";
+                    }
+
+                    var ehPadrao = false;
+                    for(var p=0; p<listaHorariosPadrao.length; p++) { if(listaHorariosPadrao[p] === hora) { ehPadrao = true; break; } }
+                    var badgeExcecao = !ehPadrao ? "<span class='badge badge-excecao'>Horario Especial</span>" : "";
+                    var tagCriacao = (ag.data_criacao && ag.data_criacao !== "-") ? "<span class='info-criacao'>Gravado em: " + ag.data_criacao + "</span>" : "";
+
+                    var detalhes = "<span class='info-nome'>" + (ag.falecido||"") + "</span>" +
+                                   "<span class='info-detalhes'>" +
+                                   "Lote: " + (ag.lote||"-") + " | Resp: " + (ag.resp||"-") + infoCpfExibicao + " | Tel: " + (ag.tel||"-") + "<br>" +
+                                   "Funeraria: " + (ag.funeraria||"-") + "<br>" +
+                                   badgeExcecao + badgeSit + badgeSocialTag + badgeObito + badgeTaxa + badgeDocAdicional +
+                                   infoExtraRequerimento + tagCriacao + "</span>";
+                    
+                    var dadosObjEscapados = encodeURIComponent(JSON.stringify(ag));
+
+                    html += "<tr>";
+                    html += "<td style='text-align:center; font-weight:bold; font-size: 14px;'>" + hora + "</td>";
+                    html += "<td class='" + (!ehPadrao ? "status-excecao" : "status-reservado") + "'>" + (!ehPadrao ? "EXCECAO" : "RESERVADO") + "</td>";
+                    html += "<td>" + detalhes + "</td>";
+                    html += "<td style='text-align:center;'>";
+                    html += "<button class='btn-acao btn-alterar' onclick='abrirModalAlterarPorObjeto(\"" + dadosObjEscapados + "\")'>Alterar</button>";
+                    html += "<button class='btn-acao btn-excluir' onclick='confirmarExclusao(" + ag.id + ", \"" + hora + "\")'>Desmarcar</button>";
+                    html += "</td></tr>";
+                } else {
+                    html += "<tr><td style='text-align:center; font-weight:bold; font-size: 14px;'>" + hora + "</td><td class='status-livre'>DISPONIVEL</td><td style='color:#999; text-align:center;'>-</td><td style='text-align:center; color:#999;'>-</td></tr>";
+                }
+            }
+            html += "</table>";
+            document.getElementById(idContainer).innerHTML = html;
+        }
+
+        window.abrirModalNovo = function() {
+            document.getElementById("modalTitulo").innerText = "Novo Agendamento";
+            document.getElementById("formModoEdicao").value = "nao";
+            document.getElementById("formIdRegistro").value = "";
+            document.getElementById("formData").value = document.getElementById("txtData").value;
+            document.getElementById("formDataCriacao").value = ""; 
+            
+            var selCem = document.getElementById("formCem");
+            selCem.options.length = 0;
+            selCem.add(new Option("Cemiterio Central", "Central"));
+            selCem.add(new Option("Recanto da Saudade", "Recanto"));
+            selCem.disabled = false;
+            
+            document.getElementById("formHora").disabled = false;
+            document.getElementById("formHoraCustom").value = "";
+            document.getElementById("formFalecido").value = "";
+            document.getElementById("formLote").value = "";
+            document.getElementById("formResp").value = "";
+            document.getElementById("formCpf").value = "";
+            document.getElementById("formTel").value = "";
+            document.getElementById("formFuneraria").value = "";
+            document.getElementById("formAutorizacaoAbertura").value = "PENDENTE";
+            document.getElementById("formSitTerreno").value = "EXISTENTE";
+            document.getElementById("formAssistSocial").value = "N";
+            document.getElementById("formEstadoCivil").value = "SOLTEIRO(A)";
+            document.getElementById("formParentesco").value = "";
+            document.getElementById("formEndereco").value = "";
+            document.getElementById("formObitoEntregue").checked = false;
+            document.getElementById("formTaxaEntregue").checked = false;
+            document.getElementById("formCompraEntregue").checked = false;
+            window.ajustarCamposTerreno();
+            window.atualizarFormHorarios();
+            document.getElementById("modalAgendar").style.display = "block";
+        }
+
+        window.abrirModalAlterarPorObjeto = function(dadosJsonStr) {
+            var ag = JSON.parse(decodeURIComponent(dadosJsonStr));
+            
+            document.getElementById("modalTitulo").innerText = "Alterar Agendamento";
+            document.getElementById("formModoEdicao").value = "sim";
+            document.getElementById("formIdRegistro").value = ag.id;
+            document.getElementById("formData").value = ag.data || "";
+            
+            var cemiterio = ag.cem || "Central";
+            var selCem = document.getElementById("formCem");
+            selCem.options.length = 0;
+            selCem.add(new Option(cemiterio === "Central" ? "Cemiterio Central" : "Recanto da Saudade", cemiterio));
+            selCem.value = cemiterio; selCem.disabled = true;
+            
+            document.getElementById("formHora").disabled = false;
+            window.atualizarFormHorarios(ag.hora);
+
+            var ehPadrao = false, listCheck = (cemiterio === "Central") ? horariosCentral : horariosRecanto;
+            for(var p=0; p<listCheck.length; p++) { if(listCheck[p] === ag.hora) { ehPadrao = true; break; } }
+            document.getElementById("formHoraCustom").value = !ehPadrao ? ag.hora : "";
+
+            document.getElementById("formFalecido").value = ag.falecido || "";
+            document.getElementById("formLote").value = ag.lote || "";
+            document.getElementById("formResp").value = ag.resp || "";
+            document.getElementById("formCpf").value = (ag.cpf === "-" ? "" : ag.cpf) || "";
+            document.getElementById("formTel").value = (ag.tel === "-" ? "" : ag.tel) || "";
+            document.getElementById("formFuneraria").value = (ag.funeraria === "-" ? "" : ag.funeraria) || "";
+            document.getElementById("formSitTerreno").value = ag.sit_terreno || "EXISTENTE";
+            document.getElementById("formAssistSocial").value = ag.social || "N";
+            document.getElementById("formEstadoCivil").value = (ag.est_civil === "-" ? "SOLTEIRO(A)" : ag.est_civil) || "SOLTEIRO(A)";
+            document.getElementById("formParentesco").value = (ag.parentesco === "-" ? "" : ag.parentesco) || "";
+            document.getElementById("formEndereco").value = (ag.endereco === "-" ? "" : ag.endereco) || "";
+            window.ajustarCamposTerreno();
+            
+            document.getElementById("formAutorizacaoAbertura").value = ag.abert || "PENDENTE";
+            document.getElementById("formObitoEntregue").checked = ag.obito === "S";
+            document.getElementById("formTaxaEntregue").checked = ag.taxa === "S";
+            document.getElementById("formCompraEntregue").checked = ag.doc_compra === "S";
+            document.getElementById("formDataCriacao").value = ag.data_criacao || "";
+            document.getElementById("modalAgendar").style.display = "block";
+        }
+
+        window.fecharModal = function() { document.getElementById("modalAgendar").style.display = "none"; }
+
+        window.confirmarExclusao = function(idRegistro, hora) {
+            if (confirm("Deseja DESMARCAR o agendamento das " + hora + "?")) {
+                fetch('/api/agendamentos/' + idRegistro, { method: 'DELETE' })
+                    .then(res => res.json())
+                    .then(resp => {
+                        if (resp.sucesso) {
+                            carregarDados();
+                        } else {
+                            alert("Erro ao excluir agendamento.");
+                        }
+                    });
+            }
+        }
+
+        window.salvarAgendamento = function() {
+            var data = document.getElementById("formData").value.trim();
+            var hora = document.getElementById("formHoraCustom").value.trim() !== "" ? document.getElementById("formHoraCustom").value.trim() : document.getElementById("formHora").value;
+            var cem = document.getElementById("formCem").value;
+            var falecido = document.getElementById("formFalecido").value.trim();
+            
+            if (data === "" || data.length < 10) { alert("Insira uma data valida!"); return; }
+            if (falecido === "") { alert("O nome do falecido e obrigatorio!"); return; }
+
+            var dadosForm = {
+                id: document.getElementById("formIdRegistro").value || null,
+                modo: document.getElementById("formModoEdicao").value,
+                data: data,
+                hora: hora,
+                cem: cem,
+                falecido: falecido,
+                lote: document.getElementById("formLote").value.trim() || "-",
+                resp: document.getElementById("formResp").value.trim() || "-",
+                cpf: document.getElementById("formCpf").value.trim() || "-",
+                tel: document.getElementById("formTel").value.trim() || "-",
+                funeraria: document.getElementById("formFuneraria").value.trim() || "-",
+                sit_terreno: document.getElementById("formSitTerreno").value,
+                abert: document.getElementById("formAutorizacaoAbertura").value,
+                social: document.getElementById("formAssistSocial").value,
+                obito: document.getElementById("formObitoEntregue").checked ? "S" : "N",
+                taxa: document.getElementById("formTaxaEntregue").checked ? "S" : "N",
+                doc_compra: document.getElementById("formCompraEntregue").checked ? "S" : "N",
+                est_civil: document.getElementById("formEstadoCivil").value,
+                parentesco: document.getElementById("formParentesco").value.trim() || "-",
+                endereco: document.getElementById("formEndereco").value.trim() || "-",
+                data_criacao: document.getElementById("formDataCriacao").value || "-"
+            };
+
+            fetch('/api/agendamentos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dadosForm)
+            })
+            .then(res => res.json())
+            .then(resp => {
+                if (resp.sucesso) {
+                    alert("Agendamento gravado com sucesso!");
+                    window.fecharModal();
+                    carregarDados();
+                } else {
+                    alert("Erro ao gravar: " + (resp.erro || "Horario ja ocupado ou conflito."));
+                }
+            })
+            .catch(err => alert("Erro na comunicacao com o servidor."));
+        }
+    </script>
+</body>
+</html>
