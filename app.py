@@ -7,8 +7,9 @@ app = Flask(__name__)
 app.secret_key = "sua_chave_secreta_super_segura" 
 
 # --- CONFIGURAÇÃO DO SUPABASE ---
-SUPABASE_URL = "https://gbupmlhrihhyirwnrjtz.supabase.co"
-SUPABASE_KEY = "sb_publishable_opFBH512ka6va3taMRnUKg_ayugnLeF"
+# --- CONFIGURAÇÃO DO SUPABASE ---
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://gbupmlhrihhyirwnrjtz.supabase.co")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "sb_publishable_opFBH512ka6va3taMRnUKg_ayugnLeF")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
