@@ -15,6 +15,8 @@
         button { padding: 6px 12px; font-size: 12px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; }
         .btn-buscar { background-color: #DDEBF7; color: #1F4E79; margin-left: 10px; }
         .btn-novo { background-color: #2E7D32; color: white; float: right; margin-right: 15px; margin-top: 5px; position: relative; z-index: 5; }
+        .btn-usuarios { background-color: #FFC107; color: #333; float: right; margin-right: 10px; margin-top: 5px; position: relative; z-index: 5; }
+        .btn-sair { background-color: #E53935; color: white; float: right; margin-right: 15px; margin-top: 5px; position: relative; z-index: 5; }
         .corpo-principal { display: table; width: 100%; table-layout: fixed; }
         .lado-esquerdo { display: table-cell; width: 260px; vertical-align: top; padding: 15px 5px 15px 15px; box-sizing: border-box; }
         .lado-direito { display: table-cell; vertical-align: top; padding: 15px 15px 15px 5px; box-sizing: border-box; }
@@ -62,7 +64,7 @@
         .modal { display: none; position: fixed; z-index: 10; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); }
         .modal-content { background-color: white; margin: 0.5% auto; padding: 20px; border-radius: 6px; width: 420px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); max-height: 95%; overflow-y: auto; }
         .modal-content label { display: block; margin-top: 8px; font-weight: bold; font-size: 11px; color: #555; }
-        .modal-content input[type="text"], .modal-content select { width: 100%; padding: 6px; margin-top: 3px; box-sizing: border-box; border: 1px solid #CCC; border-radius: 4px; font-size: 13px; }
+        .modal-content input[type="text"], .modal-content input[type="password"], .modal-content select { width: 100%; padding: 6px; margin-top: 3px; box-sizing: border-box; border: 1px solid #CCC; border-radius: 4px; font-size: 13px; }
         .checkbox-container { margin-top: 10px; background-color: #F9F9F9; padding: 8px; border-radius: 4px; border: 1px dashed #DDD; }
         .checkbox-line { display: block; margin-bottom: 5px; cursor: pointer; font-size: 11px; font-weight: bold; }
         .checkbox-line input { margin-right: 8px; vertical-align: middle; }
@@ -87,6 +89,8 @@
         </div>
     </div>
 
+    <a href="/logout"><button class="btn-sair">Sair</button></a>
+    <button class="btn-usuarios" onclick="abrirModalUsuarios()">👥 Gerenciar Usuários</button>
     <button class="btn-novo" onclick="window.abrirModalNovo()">+ Novo Agendamento</button>
 
     <div class="corpo-principal">
@@ -118,6 +122,7 @@
         </div>
     </div>
 
+    <!-- MODAL DE AGENDAMENTO -->
     <div id="modalAgendar" class="modal">
         <div class="modal-content">
             <h3 id="modalTitulo" style="margin-top:0; color:#1F4E79; margin-bottom: 8px;">Novo Agendamento</h3>
@@ -210,6 +215,41 @@
         </div>
     </div>
 
+    <!-- MODAL DE GERENCIAMENTO DE USUÁRIOS -->
+    <div id="modalUsuarios" class="modal">
+        <div class="modal-content" style="width: 500px;">
+            <h3 style="margin-top:0; color:#1F4E79; margin-bottom: 8px;">Gerenciamento de Operadores</h3>
+            <p style="font-size: 12px; color: #666;">Cadastre novos usuários que terão acesso ao painel administrativo.</p>
+            
+            <div style="background: #F9F9F9; padding: 10px; border-radius: 4px; border: 1px solid #ddd; margin-bottom: 15px;">
+                <label>Nome Completo:</label>
+                <input type="text" id="novoUserNome" placeholder="Nome do operador" />
+                
+                <label>CPF:</label>
+                <input type="text" id="novoUserCpf" placeholder="000.000.000-03" />
+                
+                <label>E-mail:</label>
+                <input type="text" id="novoUserEmail" placeholder="email@provedor.com" />
+                
+                <label>Senha:</label>
+                <input type="password" id="novoUserSenha" placeholder="Senha de acesso" />
+                
+                <label>Nível de Acesso:</label>
+                <select id="novoUserNivel">
+                    <option value="COMUM">COMUM (Apenas Operações)</option>
+                    <option value="MASTER">MASTER (Administrador Geral)</option>
+                </select>
+
+                <button onclick="cadastrarUsuario()" style="background-color: #2E7D32; color: white; width: 100%; padding: 8px; margin-top: 10px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer;">Cadastrar Novo Usuário</button>
+            </div>
+
+            <h4 style="margin: 10px 0 5px 0; color: #1F4E79;">Usuários Cadastrados:</h4>
+            <div id="listaUsuariosContainer" style="max-height: 150px; overflow-y: auto; border: 1px solid #ddd; background: #fff;"></div>
+
+            <button onclick="fecharModalUsuarios()" style="background-color: #7F8C8D; color: white; width: 100%; padding: 8px; margin-top: 15px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">Fechar</button>
+        </div>
+    </div>
+
     <script type="text/javascript">
         var horariosCentral = ["08:00", "09:00", "10:00", "13:00", "14:00", "15:00", "16:00"];
         var horariosRecanto = ["08:00", "09:00", "10:00", "13:30", "14:20", "15:10", "15:45"];
@@ -254,9 +294,7 @@
         function renderizarCalendarioLayout() {
             var mes = dataCalendarioAtual.getMonth(), ano = dataCalendarioAtual.getFullYear();
             var elementoMesAno = document.getElementById("calMesAno");
-            if (elementoMesAno) {
-                elementoMesAno.innerText = nomesMeses[mes] + " de " + ano;
-            }
+            if (elementoMesAno) elementoMesAno.innerText = nomesMeses[mes] + " de " + ano;
             
             var dataCorrente = document.getElementById("txtData").value.trim();
             var hoje = new Date();
@@ -283,9 +321,7 @@
             html += "</div>";
             
             var elementoGrade = document.getElementById("calendarioGrade");
-            if (elementoGrade) {
-                elementoGrade.innerHTML = html;
-            }
+            if (elementoGrade) elementoGrade.innerHTML = html;
         }
 
         window.ajustarCamposTerreno = function() {
@@ -515,6 +551,73 @@
         }
 
         window.fecharModal = function() { document.getElementById("modalAgendar").style.display = "none"; }
+
+        function abrirModalUsuarios() {
+            document.getElementById("modalUsuarios").style.display = "block";
+            carregarListaUsuarios();
+        }
+
+        function fecharModalUsuarios() {
+            document.getElementById("modalUsuarios").style.display = "none";
+        }
+
+        function carregarListaUsuarios() {
+            fetch('/api/usuarios')
+                .then(res => res.json())
+                .then(usuarios => {
+                    var html = "<table style='margin-top:0;'><tr><th>Nome</th><th>CPF</th><th>Nível</th><th style='width:50px;'>Ação</th></tr>";
+                    usuarios.forEach(u => {
+                        html += `<tr><td>${u.nome}</td><td>${u.cpf}</td><td><b>${u.nivel}</b></td><td style='text-align:center;'><button class='btn-acao btn-excluir' onclick='excluirUsuario(${u.id})'>X</button></td></tr>`;
+                    });
+                    html += "</table>";
+                    document.getElementById("listaUsuariosContainer").innerHTML = html;
+                });
+        }
+
+        function cadastrarUsuario() {
+            var dados = {
+                nome: document.getElementById("novoUserNome").value.trim(),
+                cpf: document.getElementById("novoUserCpf").value.trim(),
+                email: document.getElementById("novoUserEmail").value.trim(),
+                senha: document.getElementById("novoUserSenha").value,
+                nivel: document.getElementById("novoUserNivel").value
+            };
+
+            if(!dados.nome || !dados.cpf || !dados.senha) {
+                alert("Preencha nome, CPF e senha!");
+                return;
+            }
+
+            fetch('/api/usuarios', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            })
+            .then(res => res.json())
+            .then(resp => {
+                if(resp.sucesso) {
+                    alert("Usuário cadastrado com sucesso!");
+                    document.getElementById("novoUserNome").value = "";
+                    document.getElementById("novoUserCpf").value = "";
+                    document.getElementById("novoUserEmail").value = "";
+                    document.getElementById("novoUserSenha").value = "";
+                    carregarListaUsuarios();
+                } else {
+                    alert(resp.erro || "Erro ao cadastrar.");
+                }
+            });
+        }
+
+        function excluirUsuario(id) {
+            if(confirm("Deseja realmente remover este usuário?")) {
+                fetch('/api/usuarios/' + id, { method: 'DELETE' })
+                    .then(res => res.json())
+                    .then(resp => {
+                        if(resp.sucesso) carregarListaUsuarios();
+                        else alert("Erro ao excluir usuário.");
+                    });
+            }
+        }
 
         window.confirmarExclusao = function(idRegistro, hora) {
             if (confirm("Deseja DESMARCAR o agendamento das " + hora + "?")) {
