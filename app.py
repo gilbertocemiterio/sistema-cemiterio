@@ -4,34 +4,50 @@ import datetime
 import os
 
 app = Flask(__name__)
-# Chave secreta necessária para controlar a sessão de login do administrador
 app.secret_key = "sua_chave_secreta_super_segura" 
 
 # --- CONFIGURAÇÃO DO SUPABASE ---
 SUPABASE_URL = "https://gbupmlhrihhyirwnrjtz.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndtaGFhdGNxdXdxa3FtbmttaWl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzNDc1MjUsImV4cCI6MjEwMDkyMzUyNX0.pig6MhzDPxVWFkREiyjWQHQWOG_-hHoB-OcdnovzpfU"
+SUPABASE_KEY = "sb_publishable_opFBH512ka6va3taMRnUKg_ayugnLeF"
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# 1. PÁGINA PÚBLICA (Render / Celular / Visitantes - Apenas Visualização)
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# 2. ROTA DE VALIDAÇÃO DE LOGIN DO ADMINISTRADOR
+# --- ROTA DE LOGIN ATUALIZADA (CONSULTA O BANCO) ---
 @app.route('/login', methods=['POST'])
 def login():
     dados = request.json
+    identificacao = dados.get('identificacao') # Pode ser CPF ou E-mail
     senha_digitada = dados.get('senha')
     
-    # Defina aqui a senha de administrador desejada
-    if senha_digitada == "admin123": 
-        session['logado'] = True
-        return jsonify({"sucesso": True})
-    else:
-        return jsonify({"sucesso": False, "erro": "Senha incorreta!"})
+    try:
+        # Busca o usuário pelo CPF ou E-mail
+        response = supabase.table("usuarios").select("*").or_(f"cpf.eq.{identificacao},email.eq.{identificacao}").execute()
+        usuarios = response.data
 
-# 3. PAINEL ADMINISTRATIVO (Versão completa de cadastro, edição e exclusão)
+        if len(usuarios) > 0:
+            usuario = usuarios[0]
+            if usuario['senha'] == senha_digitada:
+                session['logado'] = True
+                session['nome_usuario'] = usuario['nome']
+                session['nivel_usuario'] = usuario['nivel']
+                return jsonify({"sucesso": True})
+            else:
+                return jsonify({"sucesso": False, "erro": "Senha incorreta!"})
+        else:
+            return jsonify({"sucesso": False, "erro": "Usuário não encontrado!"})
+    except Exception as e:
+        print("Erro no login:", e)
+        return jsonify({"sucesso": False, "erro": "Erro ao conectar com o banco."})
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('index'))
+
 @app.route('/admin')
 def admin():
     if session.get('logado'):
@@ -39,7 +55,45 @@ def admin():
     else:
         return redirect(url_for('index'))
 
-# --- ROTAS DA API (FUNCIONAM PARA AMBAS AS TELAS) ---
+# --- ROTAS DE GERENCIAMENTO DE USUÁRIOS (APENAS MASTER) ---
+@app.route('/api/usuarios', methods=['GET'])
+def api_listar_usuarios():
+    try:
+        response = supabase.table("usuarios").select("id, nome, cpf, email, nivel").execute()
+        return jsonify(response.data)
+    except Exception as e:
+        return jsonify([])
+
+@app.route('/api/usuarios', methods=['POST'])
+def api_salvar_usuario():
+    if session.get('nivel_usuario') != 'MASTER':
+        return jsonify({"sucesso": False, "erro": "Acesso negado. Apenas o Master pode cadastrar."})
+    
+    dados = request.json
+    try:
+        payload = {
+            "nome": dados.get('nome'),
+            "cpf": dados.get('cpf'),
+            "email": dados.get('email'),
+            "senha": dados.get('senha'),
+            "nivel": dados.get('nivel', 'COMUM')
+        }
+        supabase.table("usuarios").insert(payload).execute()
+        return jsonify({"sucesso": True})
+    except Exception as e:
+        return jsonify({"sucesso": False, "erro": "Erro ao cadastrar (CPF já cadastrado?)."})
+
+@app.route('/api/usuarios/<int:user_id>', methods=['DELETE'])
+def api_excluir_usuario(user_id):
+    if session.get('nivel_usuario') != 'MASTER':
+        return jsonify({"sucesso": False, "erro": "Acesso negado."})
+    try:
+        supabase.table("usuarios").delete().eq("id", user_id).execute()
+        return jsonify({"sucesso": True})
+    except Exception as e:
+        return jsonify({"sucesso": False})
+
+# --- ROTAS DA API DE AGENDAMENTOS ---
 @app.route('/api/agendamentos', methods=['GET'])
 def api_listar():
     data_filtro = request.args.get('data', '')
@@ -47,11 +101,13 @@ def api_listar():
         response = supabase.table("agendamentos").select("*").eq("data", data_filtro).execute()
         return jsonify(response.data)
     except Exception as e:
-        print("Erro ao buscar:", e)
         return jsonify([])
 
 @app.route('/api/agendamentos', methods=['POST'])
 def api_salvar():
+    if not session.get('logado'):
+        return jsonify({"sucesso": False, "erro": "Usuário não autenticado."})
+    
     dados = request.json
     try:
         modo = dados.get('modo')
@@ -90,16 +146,16 @@ def api_salvar():
 
         return jsonify({"sucesso": True})
     except Exception as e:
-        print("Erro ao salvar no Supabase:", e)
         return jsonify({"sucesso": False, "erro": str(e)})
 
 @app.route('/api/agendamentos/<int:reg_id>', methods=['DELETE'])
 def api_excluir(reg_id):
+    if not session.get('logado'):
+        return jsonify({"sucesso": False})
     try:
         supabase.table("agendamentos").delete().eq("id", reg_id).execute()
         return jsonify({"sucesso": True})
     except Exception as e:
-        print("Erro ao excluir:", e)
         return jsonify({"sucesso": False})
 
 if __name__ == '__main__':
