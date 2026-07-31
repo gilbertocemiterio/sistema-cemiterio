@@ -8,8 +8,8 @@ app.secret_key = "sua_chave_secreta_super_segura"
 
 # --- CONFIGURAÇÃO DO SUPABASE ---
 # --- CONFIGURAÇÃO DO SUPABASE ---
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://gbupmlhrihhyirwnrjtz.supabase.co")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "sb_publishable_opFBH512ka6va3taMRnUKg_ayugnLeF")
+SUPABASE_URL = "https://gbupmlhrihhyirwnrjtz.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdidXBtbGhyaWhoeWlyd25yanR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzODg2MzQsImV4cCI6MjEwMDk2NDYzNH0.eQvJvlDXFeeITroZgH-5rKySLTYkNginX0cN6wmJNaI"
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
